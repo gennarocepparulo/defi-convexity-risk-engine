@@ -29,10 +29,24 @@ def row_for_price(S, label):
     total_liquidity = 10_000_000
     fees = estimate_fee_income(L, total_liquidity, daily_volume)
 
-   expected_loss = expected_jump_loss(shortfall, p_jump)
+    # --- Risk calculations ---
+    expected_loss = expected_jump_loss(shortfall, p_jump)
 
-# Avoid division by zero
-risk_reward = abs(expected_loss) / fees if fees != 0 else None
+    risk_reward = abs(expected_loss) / fees if fees != 0 else None
+
+    return {
+        "Scenario": label,
+        "Price": round(S, 2),
+        "Value": round(V, 2),
+        "Delta": round(dlt, 6),
+        "Gamma": round(gmm, 8),
+        "Gamma Exposure": round(gamma_exposure(gmm, S), 2),
+        "Shock Loss (-10%)": round(shortfall, 2),
+        "Jump Prob": round(p_jump, 4),
+        "Expected Jump Loss": round(expected_loss, 2),
+        "Est Daily Fees": round(fees, 2),
+        "Risk/Reward": round(risk_reward, 2) if risk_reward is not None else None,
+    }
 
 return {
     "Scenario": label,
