@@ -34,7 +34,7 @@ def row_for_price(S, label):
 
     risk_reward = abs(expected_loss) / fees if fees != 0 else None
 
-    return {
+return {
         "Scenario": label,
         "Price": round(S, 2),
         "Value": round(V, 2),
