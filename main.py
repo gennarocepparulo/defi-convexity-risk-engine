@@ -10,4 +10,4 @@ if __name__ == "__main__":
     
     print("\n--- CONVEXITY DASHBOARD ---")
     print(df)
-    print("\n✅ Dashboard complete!")
+    df.to_csv("outputs/sample_dashboard.csv")
