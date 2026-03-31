@@ -11,3 +11,9 @@ if __name__ == "__main__":
     print("\n--- CONVEXITY DASHBOARD ---")
     print(df)
     df.to_csv("outputs/sample_dashboard.csv")
+for idx, row in df.iterrows():
+    if row["Risk/Reward"] is not None:
+        if row["Risk/Reward"] > 3:
+            print(f"⚠️ {idx}: Risk too high vs fees")
+        else:
+            print(f"✅ {idx}: Acceptable risk level")
