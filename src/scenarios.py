@@ -12,7 +12,7 @@ from src.price_fetcher import get_token_market_data, get_coingecko_price
 # Parameters
 P_a, P_b = 1800.0, 2200.0
 L = 1000.0
-lambda_per_blk = 0.02
+lambda_per_blk = 0.001
 H_blocks = 100
 
 def row_for_price(S, label):
@@ -29,18 +29,24 @@ def row_for_price(S, label):
     total_liquidity = 10_000_000
     fees = estimate_fee_income(L, total_liquidity, daily_volume)
 
-    return {
-        "Scenario": label,
-        "Price": round(S, 2),
-        "Value": round(V, 2),
-        "Delta": round(dlt, 6),
-        "Gamma": round(gmm, 8),
-        "Gamma Exposure": round(gamma_exposure(gmm, S), 2),
-        "Shock Loss (-10%)": round(shortfall, 2),
-        "Jump Prob": round(p_jump, 4),
-        "Expected Jump Loss": round(expected_jump_loss(shortfall, p_jump), 2),
-        "Est Daily Fees": round(fees, 2),
-    }
+   expected_loss = expected_jump_loss(shortfall, p_jump)
+
+# Avoid division by zero
+risk_reward = abs(expected_loss) / fees if fees != 0 else None
+
+return {
+    "Scenario": label,
+    "Price": round(S, 2),
+    "Value": round(V, 2),
+    "Delta": round(dlt, 6),
+    "Gamma": round(gmm, 8),
+    "Gamma Exposure": round(gamma_exposure(gmm, S), 2),
+    "Shock Loss (-10%)": round(shortfall, 2),
+    "Jump Prob": round(p_jump, 4),
+    "Expected Jump Loss": round(expected_loss, 2),
+    "Est Daily Fees": round(fees, 2),
+    "Risk/Reward": round(risk_reward, 2) if risk_reward is not None else None,
+}
 
 def build_dashboard(use_real_price=True, token_id="ethereum"):
     """
