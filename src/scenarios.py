@@ -31,10 +31,9 @@ def row_for_price(S, label):
 
     # --- Risk calculations ---
     expected_loss = expected_jump_loss(shortfall, p_jump)
-
     risk_reward = abs(expected_loss) / fees if fees != 0 else None
 
-return {
+    return {   # ✅ NOW INSIDE FUNCTION
         "Scenario": label,
         "Price": round(S, 2),
         "Value": round(V, 2),
@@ -46,8 +45,7 @@ return {
         "Expected Jump Loss": round(expected_loss, 2),
         "Est Daily Fees": round(fees, 2),
         "Risk/Reward": round(risk_reward, 2) if risk_reward is not None else None,
-       }
-
+    }
 def build_dashboard(use_real_price=True, token_id="ethereum"):
     """
     Build dashboard with real-time or static prices
