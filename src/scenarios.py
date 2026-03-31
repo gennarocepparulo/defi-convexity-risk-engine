@@ -7,11 +7,9 @@ from src.risk_metrics import (
     expected_jump_loss,
     estimate_fee_income
 )
+from src.price_fetcher import get_token_market_data, get_coingecko_price
 
 # Parameters
-from src.data_fetch import get_eth_price
-
-S0 = get_eth_price()
 P_a, P_b = 1800.0, 2200.0
 L = 1000.0
 lambda_per_blk = 0.02
@@ -44,11 +42,25 @@ def row_for_price(S, label):
         "Est Daily Fees": round(fees, 2),
     }
 
-def build_dashboard():
+def build_dashboard(use_real_price=True, token_id="ethereum"):
+    """
+    Build dashboard with real-time or static prices
+    token_id: 'ethereum', 'uniswap', 'aave', etc.
+    """
+    if use_real_price:
+        S0 = get_coingecko_price(token_id=token_id)
+        if S0 is None:
+            print(f"⚠️  Could not fetch {token_id} price, using default S0=2000")
+            S0 = 2000.0
+        else:
+            print(f"✅ Real-time {token_id.upper()} price: ${S0}")
+    else:
+        S0 = 2000.0
+    
     scenarios = [
-        (0.9 * S0, "Bear"),
-        (S0, "Base"),
-        (1.1 * S0, "Bull")
+        (0.9 * S0, "Bear (-10%)"),
+        (S0, "Base (Current)"),
+        (1.1 * S0, "Bull (+10%)")
     ]
 
     rows = [row_for_price(S, label) for S, label in scenarios]
