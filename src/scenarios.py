@@ -70,9 +70,4 @@ def build_dashboard(use_real_price=True, token_id="ethereum"):
     rows = [row_for_price(S, label) for S, label in scenarios]
     return pd.DataFrame(rows).set_index("Scenario")
     
-for idx, row in df.iterrows():
-    if row["Risk/Reward"] is not None:
-        if row["Risk/Reward"] > 3:
-            print(f"⚠️ {idx}: Risk too high vs fees")
-        else:
-            print(f"✅ {idx}: Acceptable risk level")
+
