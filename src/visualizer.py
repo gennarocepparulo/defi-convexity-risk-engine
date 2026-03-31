@@ -39,12 +39,12 @@ def generate_risk_curves(P_a, P_b, L, current_price, output_dir="outputs"):
     ax2.legend()
     ax2.grid(True)
 
-    plt.tight_layout()
+  plt.tight_layout()
 
-    # Save output
-    os.makedirs(output_dir, exist_ok=True)
-    file_path = os.path.join(output_dir, "risk_curves.png")
-    plt.savefig(file_path)
-    plt.close()
+os.makedirs(output_dir, exist_ok=True)
+file_path = os.path.join(output_dir, "risk_curves.png")
+
+plt.savefig(file_path)   # ✅ SAVE FIRST
+plt.close()              # ✅ THEN CLOSE
 
     print(f"📈 Risk curves saved to {file_path}")
