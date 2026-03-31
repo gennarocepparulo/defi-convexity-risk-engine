@@ -46,7 +46,7 @@ return {
         "Expected Jump Loss": round(expected_loss, 2),
         "Est Daily Fees": round(fees, 2),
         "Risk/Reward": round(risk_reward, 2) if risk_reward is not None else None,
-    }
+       }
 
 def build_dashboard(use_real_price=True, token_id="ethereum"):
     """
