@@ -9,7 +9,9 @@ from src.risk_metrics import (
 )
 
 # Parameters
-S0 = 2000.0
+from src.data_fetch import get_eth_price
+
+S0 = get_eth_price()
 P_a, P_b = 1800.0, 2200.0
 L = 1000.0
 lambda_per_blk = 0.02
