@@ -5,7 +5,7 @@ from src.lp_model import delta_gamma_lp
 
 
 def generate_risk_curves(P_a, P_b, L, current_price, output_dir="outputs"):
-    # Price range (wide enough to show full behavior)
+    # Price range
     prices = np.linspace(P_a * 0.8, P_b * 1.2, 100)
 
     deltas = []
@@ -18,17 +18,17 @@ def generate_risk_curves(P_a, P_b, L, current_price, output_dir="outputs"):
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
 
-    # --- Delta Plot ---
+    # --- Delta ---
     ax1.plot(prices, deltas, label="Delta")
-    ax1.axvline(P_a, linestyle="--", alpha=0.6, label="Lower Bound (P_a)")
-    ax1.axvline(P_b, linestyle="--", alpha=0.6, label="Upper Bound (P_b)")
+    ax1.axvline(P_a, linestyle="--", alpha=0.6, label="Lower Bound")
+    ax1.axvline(P_b, linestyle="--", alpha=0.6, label="Upper Bound")
     ax1.axvline(current_price, linestyle=":", label="Current Price")
     ax1.set_ylabel("Delta")
     ax1.set_title("Uniswap v3 LP Delta Profile")
     ax1.legend()
     ax1.grid(True)
 
-    # --- Gamma Plot ---
+    # --- Gamma ---
     ax2.plot(prices, gammas, label="Gamma")
     ax2.axvline(P_a, linestyle="--", alpha=0.6)
     ax2.axvline(P_b, linestyle="--", alpha=0.6)
@@ -39,12 +39,12 @@ def generate_risk_curves(P_a, P_b, L, current_price, output_dir="outputs"):
     ax2.legend()
     ax2.grid(True)
 
-  plt.tight_layout()
+    plt.tight_layout()
 
-os.makedirs(output_dir, exist_ok=True)
-file_path = os.path.join(output_dir, "risk_curves.png")
-
-plt.savefig(file_path)   # ✅ SAVE FIRST
-plt.close()              # ✅ THEN CLOSE
+    # Save file
+    os.makedirs(output_dir, exist_ok=True)
+    file_path = os.path.join(output_dir, "risk_curves.png")
+    plt.savefig(file_path)
+    plt.close()
 
     print(f"📈 Risk curves saved to {file_path}")
