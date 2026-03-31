@@ -48,20 +48,6 @@ return {
         "Risk/Reward": round(risk_reward, 2) if risk_reward is not None else None,
     }
 
-return {
-    "Scenario": label,
-    "Price": round(S, 2),
-    "Value": round(V, 2),
-    "Delta": round(dlt, 6),
-    "Gamma": round(gmm, 8),
-    "Gamma Exposure": round(gamma_exposure(gmm, S), 2),
-    "Shock Loss (-10%)": round(shortfall, 2),
-    "Jump Prob": round(p_jump, 4),
-    "Expected Jump Loss": round(expected_loss, 2),
-    "Est Daily Fees": round(fees, 2),
-    "Risk/Reward": round(risk_reward, 2) if risk_reward is not None else None,
-}
-
 def build_dashboard(use_real_price=True, token_id="ethereum"):
     """
     Build dashboard with real-time or static prices
