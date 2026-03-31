@@ -1,3 +1,5 @@
+import os
+os.makedirs("outputs", exist_ok=True)
 from src.lp_model import value_lp, delta_gamma_lp
 from src.risk_metrics import expected_jump_loss, gamma_exposure
 from src.scenarios import build_dashboard
