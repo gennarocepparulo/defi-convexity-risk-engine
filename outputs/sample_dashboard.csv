@@ -1,4 +1,4 @@
-Scenario,Price,Value,Delta,Gamma,Gamma Exposure,Shock Loss (-10%),Jump Prob,Expected Jump Loss,Est Daily Fees
-Bear (-10%),1800.0,1234.56,-0.0234,0.0000156,23.45,-45.67,0.0198,0.90,150.25
-Base (Current),2000.0,1500.00,0.1250,0.0000098,98.76,-120.34,0.0198,2.38,175.50
-Bull (+10%),2200.0,1845.23,0.3456,0.0000012,289.45,-234.56,0.0198,4.63,200.75
+Scenario,Price,Value,Delta,Gamma,Gamma Exposure,Shock Loss (-10%),Jump Prob,Expected Jump Loss,Est Daily Fees,Risk/Reward
+Bear (-10%),1922.36,4278.2,1.487665,-0.00593221,21922.39,-385.14,0.0952,-36.65,15.0,2.44
+Base (Current),2135.96,4467.67,0.317247,-0.00506501,23108.22,-189.47,0.0952,-18.03,15.0,1.2
+Bull (+10%),2349.56,4477.75,0.0,0.0,0.0,-18.02,0.0952,-1.71,15.0,0.11
