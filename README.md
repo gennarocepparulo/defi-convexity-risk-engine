@@ -65,6 +65,17 @@ This framework helps evaluate:
 * Integration with on-chain data (Dune, APIs)
 * Streamlit dashboard for real-time monitoring
 
+## Convexity Profile of a Uniswap v3 LP
+
+The following chart illustrates the local Delta and Gamma of a concentrated liquidity position.
+
+![Risk Curves](outputs/risk_curves.png)
+
+Key observations:
+- Delta decreases with price due to inventory rebalancing
+- Gamma is strictly negative within the active range
+- The LP is effectively short volatility
+
 ## Author
 
 DeFi Quant Analyst focused on AMM risk, convexity, and yield modeling.
