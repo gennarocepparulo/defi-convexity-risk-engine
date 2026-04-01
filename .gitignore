@@ -1,0 +1,9 @@
+# Cartelle Python da ignorare
+__pycache__/
+*.pyc
+
+# File temporanei
+*.log
+
+# Output generati automaticamente
+outputs/*.png
