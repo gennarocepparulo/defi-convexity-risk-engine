@@ -113,15 +113,6 @@ Key observations:
 - The LP is effectively short volatility
 
 ---
-
-## Quick Start
-
-```bash
-pip install -r requirements.txt
-python main.py
-
----
-
 ## Limitations
 - simplified jump specification
 - no full calibration to market data yet
