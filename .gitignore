@@ -5,5 +5,4 @@ __pycache__/
 # File temporanei
 *.log
 
-# Output generati automaticamente
-outputs/*.png
+
