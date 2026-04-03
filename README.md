@@ -126,6 +126,17 @@ Key observations:
 
 > LP positions sacrifice upside and downside to earn fees.
 
+## Simulation: LP vs HODL Outcomes
+
+![Simulation](outputs/simulation_distribution.png)
+
+### Interpretation
+
+- HODL exhibits higher variance and higher upside potential  
+- LP outcomes are more concentrated due to truncated exposure  
+- LP sacrifices extreme gains in exchange for fee income  
+
+> LP positions reduce variance but introduce convexity-driven underperformance in trending markets.
 ## Limitations
 - simplified jump specification
 - no full calibration to market data yet
