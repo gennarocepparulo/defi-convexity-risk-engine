@@ -113,6 +113,19 @@ Key observations:
 - The LP is effectively short volatility
 
 ---
+## LP vs HODL Comparison
+
+![PnL Comparison](outputs/pnl_comparison.png)
+
+### Interpretation
+
+- HODL exhibits linear exposure to price  
+- LP value is concave due to inventory rebalancing  
+- LP underperforms in trending markets  
+- The difference represents **impermanent loss**
+
+> LP positions sacrifice upside and downside to earn fees.
+
 ## Limitations
 - simplified jump specification
 - no full calibration to market data yet
