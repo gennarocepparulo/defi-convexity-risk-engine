@@ -113,6 +113,20 @@ Key observations:
 - The LP is effectively short volatility
 
 ---
+## Convexity Cost (Impermanent Loss)
+
+The difference between LP and HODL payoffs highlights the concave nature
+of LP positions. The quantity
+
+LP − HODL
+
+represents the convexity cost borne by liquidity providers as prices move
+away from the initial level.
+
+The convexity cost is visualized by running:
+
+```bash
+python main.py
 ## LP vs HODL Comparison
 
 ![PnL Comparison](outputs/pnl_comparison.png)
