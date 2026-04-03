@@ -123,10 +123,6 @@ LP − HODL
 represents the convexity cost borne by liquidity providers as prices move
 away from the initial level.
 
-The convexity cost is visualized by running:
-
-```bash
-python main.py
 ## LP vs HODL Comparison
 
 ![PnL Comparison](outputs/pnl_comparison.png)
