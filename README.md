@@ -151,6 +151,18 @@ This confirms that LPs systematically give up performance in trending markets in
 - LP sacrifices extreme gains in exchange for fee income  
 
 > LP positions reduce variance but introduce convexity-driven underperformance in trending markets.
+## Fee vs Convexity Trade-off
+
+Simulation results show that LP profitability depends on the balance between:
+
+- fee income (positive carry)
+- convexity cost (negative PnL in trends)
+
+When volatility is high and price trends strongly, convexity losses dominate.
+
+When volume is high and price remains range-bound, fees can compensate losses.
+
+> LP is effectively a volatility-selling strategy that requires sufficient flow to be profitable.
 ## Limitations
 - simplified jump specification
 - no full calibration to market data yet
