@@ -113,6 +113,20 @@ Key observations:
 - The LP is effectively short volatility
 
 ---
+## Convexity Cost (Impermanent Loss)
+
+Liquidity provider payoffs are concave in price due to the rebalancing
+mechanism of AMMs. As a result, LP positions underperform a linear HODL
+strategy when prices move away from the initial level.
+
+The convexity cost (impermanent loss) is defined as:
+
+LP − HODL
+
+and is visualized below.
+
+![Convexity Cost](outputs/convexity_cost.png)
+
 ## LP vs HODL Comparison
 
 ![PnL Comparison](outputs/pnl_comparison.png)
