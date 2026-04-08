@@ -168,6 +168,21 @@ When volume is high and price remains range-bound, fees can compensate losses.
 - no full calibration to market data yet
 - no on-chain data pipeline yet
 
+## New: Uniswap v3 LP Strategy Optimization
+
+This module extends the risk engine from **risk measurement** to **strategy design** for Uniswap v3 liquidity provision.
+
+It introduces:
+
+- dynamic liquidity provision strategies  
+- trigger-based and rule-based rebalancing  
+- optimization of LP range width  
+- explicit modeling of gas and slippage costs  
+
+The goal is to determine the liquidity range and rebalancing policy that maximize expected net LP returns under stochastic price dynamics.
+
+See: [`docs/problem_definition.md`](docs/problem_definition.md)
+
 ## Roadmap
 - historical backtesting
 - dynamic rebalancing strategies
@@ -177,3 +192,6 @@ When volume is high and price remains range-bound, fees can compensate losses.
 ## Author
 
 DeFi Quant Analyst focused on AMM risk, convexity, and yield modeling.
+
+
+[def]: docs/problem_definition.md
