@@ -4,20 +4,15 @@ from typing import Optional, Tuple
 
 @dataclass
 class LPStrategyConfig:
-    """
-    Configuration for a Uniswap v3 LP strategy.
-    Width is expressed as a symmetric percentage around the center price.
-    Example: width_pct = 0.20 means +/- 20% around center_price.
-    """
     center_price: float
     width_pct: float
-    rebalance_policy: str = "none"   # "none", "threshold", "time"
+    rebalance_policy: str = "none"   # "none", "out_of_range", "threshold", "time"
     rebalance_threshold: Optional[float] = None
     rebalance_every_n_steps: Optional[int] = None
     gas_cost: float = 0.0
     slippage_cost: float = 0.0
     capital: float = 1_000.0
-    fee_tier: float = 0.003          # 0.3% default
+    fee_tier: float = 0.003
 
 
 class UniswapV3Strategy:
@@ -45,11 +40,15 @@ class UniswapV3Strategy:
         """
         Basic rebalancing rules:
         - none: never rebalance
+        - out_of_range: rebalance when price exits the active range
         - threshold: rebalance if price drifts enough from center
         - time: rebalance every N steps
         """
         if self.config.rebalance_policy == "none":
             return False
+
+        if self.config.rebalance_policy == "out_of_range":
+            return not self.is_in_range(current_price)
 
         if self.config.rebalance_policy == "threshold":
             if self.config.rebalance_threshold is None:
@@ -65,34 +64,5 @@ class UniswapV3Strategy:
         return False
 
     def rebalance(self, new_center_price: float) -> None:
-        """
-        Re-center the LP range around a new price.
-        """
         self.config.center_price = new_center_price
 
-
-class UniswapV3Strategy:
-    def __init__(self, config: StrategyConfig):
-        self.config = config
-
-    def range_width(self) -> float:
-        return self.config.upper_bound - self.config.lower_bound
-
-    def should_rebalance(self, current_price: float) -> bool:
-        if self.config.rebalance_policy == "none":
-            return False
-
-        if self.config.rebalance_policy == "threshold":
-            if self.config.rebalance_threshold is None:
-                return False
-            mid = 0.5 * (self.config.lower_bound + self.config.upper_bound)
-            deviation = abs(current_price - mid) / mid
-            return deviation >= self.config.rebalance_threshold
-
-        return False
-
-    def transaction_cost(self) -> float:
-        return self.config.gas_cost + self.config.slippage_cost
-
-    def active_range(self) -> Tuple[float, float]:
-        return self.config.lower_bound, self.config.upper_bound

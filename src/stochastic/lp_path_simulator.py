@@ -57,6 +57,7 @@ def simulate_lp_strategy(
     rebalance_flags = np.zeros(len(prices), dtype=bool)
     rebalance_costs = np.zeros(len(prices))
     center_prices = np.zeros(len(prices))
+    time_in_range = np.mean(in_range)
 
     for t in range(len(prices)):
         current_price = prices[t]
