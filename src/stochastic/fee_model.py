@@ -41,4 +41,3 @@ def estimate_fee_accrual(
         fees = fees * in_range_mask.astype(float)
 
     return fees
-``

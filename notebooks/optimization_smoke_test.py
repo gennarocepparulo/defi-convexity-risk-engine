@@ -8,14 +8,14 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import numpy as np
 
-from src.stochastic.price_process import GBMConfig, simulate_gbm_paths
+import src.stochastic.price_process
 from src.stochastic.fee_model import FeeModelConfig
 from src.stochastic.lp_path_simulator import LPSimulationConfig
 from src.optimization.grid_search import optimize_width_grid
 from src.optimization.objective import expected_net_return
 
 # 1) Simulate price paths
-gbm_cfg = GBMConfig(
+gbm_cfg = src.stochastic.price_process.GBMConfig(
     s0=2000.0,
     mu=0.05,
     sigma=0.60,
@@ -25,7 +25,7 @@ gbm_cfg = GBMConfig(
     seed=42,
 )
 
-paths = simulate_gbm_paths(gbm_cfg)
+paths = src.stochastic.price_process.simulate_gbm_paths(gbm_cfg)
 prices = paths[:, 0]
 
 # 2) Configure fee/sim
