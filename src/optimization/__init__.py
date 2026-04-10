@@ -5,4 +5,3 @@ from .objective import (
 )
 from .constraints import validate_width_bounds, validate_positive_capital
 from .grid_search import optimize_width_grid, optimize_width_grid_mc
-``

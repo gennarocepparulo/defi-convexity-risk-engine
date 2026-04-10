@@ -9,8 +9,11 @@ class LPStrategyConfig:
     rebalance_policy: str = "none"   # "none", "out_of_range", "threshold", "time"
     rebalance_threshold: Optional[float] = None
     rebalance_every_n_steps: Optional[int] = None
+
     gas_cost: float = 0.0
-    slippage_cost: float = 0.0
+    slippage_coeff: float = 0.0              # k in k * capital / width
+    min_width_for_costs: float = 0.03
+
     capital: float = 1_000.0
     fee_tier: float = 0.003
 
@@ -33,17 +36,16 @@ class UniswapV3Strategy:
     def is_in_range(self, price: float) -> bool:
         return self.lower_bound <= price <= self.upper_bound
 
-    def transaction_cost(self) -> float:
-        return self.config.gas_cost + self.config.slippage_cost
+    def transaction_cost(self, capital_base: float) -> float:
+        """
+        Transaction cost = gas + slippage.
+        Slippage scales inversely with width.
+        """
+        effective_width = max(self.config.width_pct, self.config.min_width_for_costs)
+        slippage_cost = self.config.slippage_coeff * capital_base / effective_width
+        return self.config.gas_cost + slippage_cost
 
     def should_rebalance(self, current_price: float, step: int) -> bool:
-        """
-        Basic rebalancing rules:
-        - none: never rebalance
-        - out_of_range: rebalance when price exits the active range
-        - threshold: rebalance if price drifts enough from center
-        - time: rebalance every N steps
-        """
         if self.config.rebalance_policy == "none":
             return False
 
@@ -65,4 +67,3 @@ class UniswapV3Strategy:
 
     def rebalance(self, new_center_price: float) -> None:
         self.config.center_price = new_center_price
-
