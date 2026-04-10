@@ -168,6 +168,48 @@ When volume is high and price remains range-bound, fees can compensate losses.
 - no full calibration to market data yet
 - no on-chain data pipeline yet
 
+### 📊 Mechanism: Fee Concentration vs Width
+
+![Fee Income](outputs/fee_income_vs_width.png)
+
+Fee generation decreases monotonically as width increases.
+
+Key observations:
+
+- Narrower ranges significantly increase fee density  
+- Higher volatility shifts the entire fee curve upward  
+- The marginal benefit of narrowing the range diminishes at very low widths  
+
+This confirms that **fee concentration is the primary driver of LP returns**.
+
+---
+
+### 📊 Strategy Outcome: Performance vs Volatility
+
+![Performance](outputs/performance_vs_volatility.png)
+
+LP strategies benefit strongly from higher volatility:
+
+- Mean LP outperformance vs HODL increases with σ  
+- Higher volatility leads to more trading activity and fee accrual  
+
+This demonstrates that LP positions act as **volatility-harvesting strategies**.
+
+---
+
+### 📊 Decision Rule: Optimal Width vs Volatility
+
+![Optimal Width](outputs/optimal_width_vs_volatility.png)
+
+The optimal width remains within a stable interior range:
+
+- No corner solutions (neither very narrow nor very wide)  
+- Only mild variation across volatility regimes  
+
+This suggests that:
+
+> Optimal LP positioning is robust to volatility changes, provided rebalancing is active.
+> 
 ## Roadmap
 - historical backtesting
 - dynamic rebalancing strategies
