@@ -74,6 +74,9 @@ def run_volatility_sweep():
 
         results["sigma"] = sigma
         all_results.append(results)
+        # ✅ SAVE PER-SIGMA RESULTS (THIS IS THE MISSING LINK)
+        results_path = output_dir / f"results_sigma_{sigma}.csv"
+        results.to_csv(results_path, index=False)
 
         best = results.iloc[0]
 
