@@ -61,3 +61,27 @@ def simulate_lp_vs_hodl(
         hodl_val = (final_price / S0) * V0
 
         final_lp.append(lp_val)
+        final_hodl.append(hodl_val)
+
+    # --- Plot distribution ---
+    plt.figure(figsize=(10, 6))
+
+    plt.hist(final_lp, bins=30, alpha=0.6, density=True, label="LP Outcomes")
+    plt.hist(final_hodl, bins=30, alpha=0.6, density=True, label="HODL Outcomes")
+
+    plt.xlabel("Final Portfolio Value")
+    plt.ylabel("Density")
+    plt.title("LP vs HODL: Distribution of Outcomes")
+    plt.legend()
+    plt.grid(True)
+
+    os.makedirs(output_dir, exist_ok=True)
+    file_path = os.path.join(output_dir, "simulation_distribution.png")
+    plt.savefig(file_path)
+    plt.close()
+
+    print(f"Simulation saved to {file_path}")
+    print("Average LP:", np.mean(final_lp))
+    print("Average HODL:", np.mean(final_hodl))
+
+    return np.array(final_lp), np.array(final_hodl)
