@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=none
+# =========================================
+# Uniswap v3 LP Strategy Config
+# =========================================
+
+market:
+  s0: 2000.0
+  mu: 0.05
+  sigma: 0.6
+
+simulation:
+  horizon_years: 1.0
+  steps_per_year: 252
+  n_paths: 200
+  seed: 42
+
+strategy:
+  width_pct: 0.20
+  rebalance_policy: "out_of_range"
+
+costs:
+  gas_cost: 2.0
+  slippage_coeff: 0.0005
+
+fees:
+  fee_tier: 0.003
+  volume_multiplier: 8.0
+  liquidity_share: 1.0
+  reference_width: 0.25
+  alpha: 0.7
+
+capital:
+  initial_capital: 1000.0
