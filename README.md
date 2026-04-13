@@ -209,7 +209,20 @@ The optimal width remains within a stable interior range:
 This suggests that:
 
 > Optimal LP positioning is robust to volatility changes, provided rebalancing is active.
-> 
+
+### Robustness: Transaction Cost Sensitivity
+
+We test robustness of the optimal LP width under varying transaction costs.
+As gas and slippage increase, the optimizer selects wider LP ranges:
+
+| Gas | Slippage | Optimal Width |
+|-----|----------|---------------|
+| Low | Low | ~14% |
+| Baseline | Medium | ~20% |
+| High | High | ~30% |
+
+This confirms that operational friction pushes LP strategies toward wider,
+more passive ranges, even under identical price dynamics.
 ## Roadmap
 - historical backtesting
 - dynamic rebalancing strategies
