@@ -39,9 +39,9 @@ SEEDS = [42, 123, 999]
 HORIZONS = [1.0, 2.0]
 
 COST_REGIMES = [
-    (1.0, 0.00025),
-    (2.0, 0.00050),  # baseline
-    (5.0, 0.00100),
+    (1.0, 0.00025),   # low friction
+    (2.0, 0.00050),   # baseline
+    (5.0, 0.00100),   # high friction
 ]
 
 WIDTH_GRID = np.round(np.arange(0.10, 0.31, 0.02), 3)
@@ -84,7 +84,7 @@ def run_robustness():
                     mu=0.05,
                     sigma=sigma,
                     t_horizon=T,
-                    n_steps=int(252 * T),  # ✅ FIXED
+                    n_steps=int(252 * T),
                     n_paths=N_PATHS,
                     seed=seed,
                 )
@@ -116,15 +116,6 @@ def run_robustness():
                         "seed": seed,
                         "gas_cost": gas_cost,
                         "slippage_coeff": slippage_coeff,
-
-                        # baseline flag
-                        "is_baseline": (
-                            gas_cost == 2.0 and
-                            slippage_coeff == 0.0005 and
-                            seed == 42 and
-                            T == 1.0
-                        ),
-
                         "optimal_width": best["width_pct"],
                         "best_score": best["objective"],
                         "mean_objective": best["mean_objective"],
@@ -139,7 +130,7 @@ def run_robustness():
     out_csv = OUTPUT_DIR / "robustness_unified.csv"
     df.to_csv(out_csv, index=False)
 
-    print(f"\nSaved results to: {out_csv}")
+    print(f"Saved robustness results to: {out_csv}")
     print(df.head())
 
     return df
@@ -150,17 +141,19 @@ def run_robustness():
 
 def plot_robustness(df):
 
-    # --- COST SENSITIVITY (with error bars) ---
+    # -----------------------------
+    # COST SENSITIVITY
+    # -----------------------------
     df_cost = (
         df.groupby(["gas_cost", "slippage_coeff"])["optimal_width"]
         .agg(["mean", "std"])
         .reset_index()
+        .sort_values(["gas_cost", "slippage_coeff"])
     )
 
-    plt.figure()
+    plt.figure(figsize=(6, 4))
     x = range(len(df_cost))
-
-    plt.errorbar(x, df_cost["mean"], yerr=df_cost["std"], marker="o")
+    plt.errorbar(x, df_cost["mean"], yerr=df_cost["std"], marker="o", capsize=5)
 
     plt.xticks(
         x,
@@ -168,62 +161,55 @@ def plot_robustness(df):
     )
 
     plt.ylabel("Optimal Width")
-    plt.title("Optimal Width vs Transaction Costs")
+    plt.title("Optimal Width vs Transaction Costs (σ = 0.6)")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "robustness_costs.png")
+    plt.savefig(OUTPUT_DIR / "robustness_costs.png", dpi=150)
     plt.close()
 
-    # --- COST vs PERFORMANCE ---
-    df_perf = (
-        df.groupby(["gas_cost", "slippage_coeff"])["mean_lp_minus_hodl"]
-        .mean()
-        .reset_index()
+    # -----------------------------
+    # SEED STABILITY (BASELINE)
+    # -----------------------------
+    df_seed_only = df[
+        (df["gas_cost"] == 2.0) &
+        (df["slippage_coeff"] == 0.0005) &
+        (df["T"] == 1.0)
+    ]
+
+    plt.figure(figsize=(6, 4))
+    df_seed_only.boxplot(
+        column="optimal_width",
+        by="seed",
+        grid=True
     )
 
-    plt.figure()
-    x = range(len(df_perf))
-
-    plt.plot(x, df_perf["mean_lp_minus_hodl"], marker="o")
-
-    plt.xticks(
-        x,
-        [f"gas={r.gas_cost}\nslip={r.slippage_coeff}" for _, r in df_perf.iterrows()]
-    )
-
-    plt.ylabel("LP vs HODL")
-    plt.title("Performance vs Transaction Costs")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "robustness_performance_costs.png")
-    plt.close()
-
-    # --- SEED STABILITY ---
-    df_seed = df.groupby("seed")["optimal_width"].agg(["mean", "std"]).reset_index()
-
-    plt.figure()
-    plt.errorbar(df_seed["seed"], df_seed["mean"], yerr=df_seed["std"], marker="o")
-
-    plt.xlabel("Seed")
+    plt.title("Optimal Width Stability Across Random Seeds (Baseline)")
+    plt.suptitle("")
+    plt.xlabel("Random Seed")
     plt.ylabel("Optimal Width")
-    plt.title("Optimal Width vs Random Seed")
-    plt.grid(True)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "robustness_seeds.png")
+    plt.savefig(OUTPUT_DIR / "robustness_seeds.png", dpi=150)
     plt.close()
 
-    # --- HORIZON SENSITIVITY ---
-    df_T = df.groupby("T")["optimal_width"].agg(["mean", "std"]).reset_index()
+    # -----------------------------
+    # HORIZON SENSITIVITY
+    # -----------------------------
+    df_T = (
+        df.groupby("T")["optimal_width"]
+        .agg(["mean", "std"])
+        .reset_index()
+        .sort_values("T")
+    )
 
-    plt.figure()
-    plt.errorbar(df_T["T"], df_T["mean"], yerr=df_T["std"], marker="o")
+    plt.figure(figsize=(6, 4))
+    plt.errorbar(df_T["T"], df_T["mean"], yerr=df_T["std"], marker="o", capsize=5)
 
     plt.xlabel("Time Horizon (years)")
     plt.ylabel("Optimal Width")
-    plt.title("Optimal Width vs Time Horizon")
+    plt.title("Optimal Width vs Time Horizon (σ = 0.6)")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "robustness_horizon.png")
+    plt.savefig(OUTPUT_DIR / "robustness_horizon.png", dpi=150)
     plt.close()
 
     print("Saved all robustness plots to outputs/")
