@@ -249,6 +249,15 @@ Target:
 This balances fee generation, operational efficiency, and downside risk.
 
 ---
+## Final Strategy Selection
+
+Based on optimization, volatility sweeps, and robustness analysis, we select a log-symmetric Uniswap v3 LP strategy with a 20% width centered on the current price and rebalancing upon range exit.
+
+This strategy lies at the center of a robust optimal band (15–25%) and remains stable across volatility regimes, random seeds, transaction costs, and investment horizons. Narrower ranges generate higher fees but suffer from excessive turnover, while wider ranges dilute fee capture.
+
+An end-to-end execution of the selected strategy (`run_strategy.py`) confirms the expected risk profile: the strategy outperforms HODL in a majority of paths but exhibits high variance, with mean performance sensitive to volatility and realization. This behavior is consistent with LP strategies as volatility-harvesting mechanisms rather than guaranteed outperformers.
+
+The selected configuration is therefore recommended as a defensible, decision-grade LP strategy under realistic market frictions.
 
 ## Scope and Limitations
 
