@@ -68,7 +68,6 @@ def run_strategy(cfg):
     # --------------------------------------------------------------
     sim_cfg = LPSimulationConfig(
         initial_capital=cfg["capital"]["initial_capital"],
-        il_sensitivity=1.0,
         include_rebalancing_costs=True,
     )
 

@@ -107,7 +107,6 @@ def run_cost_sensitivity():
 
     sim_cfg = LPSimulationConfig(
         initial_capital=1000.0,
-        il_sensitivity=1.0,
         include_rebalancing_costs=True,
     )
 
