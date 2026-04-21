@@ -1,12 +1,19 @@
-from src.stochastic.lp_path_simulator import simulate_lp_strategy
 from pathlib import Path
 import sys
 
+# --------------------------------------------------
+# Ensure project root in path
+# --------------------------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.stochastic.lp_path_simulator import simulate_lp_strategy
 
+
+# --------------------------------------------------
+# Wrapper: LP minus HODL
+# --------------------------------------------------
 def simulate_lp_minus_hodl(
     prices,
     strategy,
@@ -14,24 +21,16 @@ def simulate_lp_minus_hodl(
     sim_config,
 ):
     """
-    Run LP strategy simulation and isolate the research variable:
+    Core research variable:
 
-        X_t = V_t^{LP} - V_t^{HODL}
+        X_t = LP_value - HODL_value
 
-    Returns
-    -------
-    DataFrame
-        Contains:
-        - step
-        - price
-        - lp_value
-        - hodl_value
-        - lp_minus_hodl
-        - cum_fees
-        - il_value
-        - in_range
-        - rebalanced
+    This is the key object for:
+    - martingale tests
+    - convexity analysis
+    - strategy optimization
     """
+
     sim_df = simulate_lp_strategy(
         prices=prices,
         strategy=strategy,
@@ -39,13 +38,15 @@ def simulate_lp_minus_hodl(
         sim_config=sim_config,
     ).copy()
 
+    # --------------------------------------------------
+    # Sanity check (robust to simulator changes)
+    # --------------------------------------------------
     required_cols = [
         "step",
         "price",
         "lp_value",
         "hodl_value",
         "cum_fees",
-        "il_value",
         "in_range",
         "rebalanced",
     ]
@@ -53,10 +54,22 @@ def simulate_lp_minus_hodl(
     missing = [col for col in required_cols if col not in sim_df.columns]
     if missing:
         raise ValueError(
-            f"Missing required columns from simulate_lp_strategy: {missing}"
+            f"simulate_lp_strategy is missing columns: {missing}"
         )
 
-    sim_df["lp_minus_hodl"] = sim_df["lp_value"] - sim_df["hodl_value"]
+    # --------------------------------------------------
+    # Core variable
+    # --------------------------------------------------
+    sim_df["lp_minus_hodl"] = (
+        sim_df["lp_value"] - sim_df["hodl_value"]
+    )
+
+    # --------------------------------------------------
+    # Optional: convexity proxy (cleaner than IL)
+    # --------------------------------------------------
+    sim_df["convexity_proxy"] = (
+        sim_df["lp_minus_hodl"] - sim_df["cum_fees"]
+    )
 
     return sim_df[
         [
@@ -66,7 +79,7 @@ def simulate_lp_minus_hodl(
             "hodl_value",
             "lp_minus_hodl",
             "cum_fees",
-            "il_value",
+            "convexity_proxy",
             "in_range",
             "rebalanced",
         ]

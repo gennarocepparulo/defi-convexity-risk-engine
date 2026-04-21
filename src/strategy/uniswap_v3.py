@@ -1,69 +1,89 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 
+# --------------------------------------------------
+# Configuration
+# --------------------------------------------------
 @dataclass
 class LPStrategyConfig:
     center_price: float
     width_pct: float
-    rebalance_policy: str = "none"   # "none", "out_of_range", "threshold", "time"
-    rebalance_threshold: Optional[float] = None
-    rebalance_every_n_steps: Optional[int] = None
-
-    gas_cost: float = 0.0
-    slippage_coeff: float = 0.0              # k in k * capital / width
-    min_width_for_costs: float = 0.03
-
-    capital: float = 1_000.0
-    fee_tier: float = 0.003
+    rebalance_policy: str = "none"       # "none" | "out_of_range" | "threshold"
+    rebalance_threshold: float = 0.05    # used only for "threshold"
+    gas_cost: float = 1.0
+    slippage_coeff: float = 0.001
+    capital: float = 1000.0
 
 
+# --------------------------------------------------
+# Strategy
+# --------------------------------------------------
 class UniswapV3Strategy:
+
     def __init__(self, config: LPStrategyConfig):
         self.config = config
 
+    # --------------------------------------------------
+    # Range
+    # --------------------------------------------------
     @property
     def lower_bound(self) -> float:
-        return self.config.center_price * (1.0 - self.config.width_pct)
+        return float(self.config.center_price) * (1.0 - float(self.config.width_pct))
 
     @property
     def upper_bound(self) -> float:
-        return self.config.center_price * (1.0 + self.config.width_pct)
-
-    def active_range(self) -> Tuple[float, float]:
-        return self.lower_bound, self.upper_bound
+        return float(self.config.center_price) * (1.0 + float(self.config.width_pct))
 
     def is_in_range(self, price: float) -> bool:
         return self.lower_bound <= price <= self.upper_bound
 
-    def transaction_cost(self, capital_base: float) -> float:
-        """
-        Transaction cost = gas + slippage.
-        Slippage scales inversely with width.
-        """
-        effective_width = max(self.config.width_pct, self.config.min_width_for_costs)
-        slippage_cost = self.config.slippage_coeff * capital_base / effective_width
-        return self.config.gas_cost + slippage_cost
-
+    # --------------------------------------------------
+    # Rebalancing logic
+    # --------------------------------------------------
     def should_rebalance(self, current_price: float, step: int) -> bool:
-        if self.config.rebalance_policy == "none":
+        """
+        Decide whether to rebalance based on policy.
+
+        Policies:
+        - "none": never rebalance
+        - "out_of_range": rebalance when price exits range
+        - "threshold": rebalance when deviation from center exceeds threshold
+        """
+
+        policy = str(self.config.rebalance_policy).lower()
+
+        # --- no rebalancing ---
+        if policy == "none":
             return False
 
-        if self.config.rebalance_policy == "out_of_range":
+        # --- rebalance when out of range ---
+        if policy == "out_of_range":
             return not self.is_in_range(current_price)
 
-        if self.config.rebalance_policy == "threshold":
-            if self.config.rebalance_threshold is None:
+        # --- threshold-based rebalancing ---
+        if policy == "threshold":
+            center = float(self.config.center_price)
+            if center <= 0:
                 return False
-            deviation = abs(current_price - self.config.center_price) / self.config.center_price
-            return deviation >= self.config.rebalance_threshold
 
-        if self.config.rebalance_policy == "time":
-            if self.config.rebalance_every_n_steps is None:
-                return False
-            return step > 0 and step % self.config.rebalance_every_n_steps == 0
+            deviation = abs(current_price / center - 1.0)
+            return deviation > float(self.config.rebalance_threshold)
 
+        # --- unknown policy (fail safe) ---
         return False
 
-    def rebalance(self, new_center_price: float) -> None:
-        self.config.center_price = new_center_price
+    # --------------------------------------------------
+    # Transaction cost model
+    # --------------------------------------------------
+    def transaction_cost(self, notional: float) -> float:
+        """
+        Cost = gas + slippage
+
+        Slippage increases as width becomes narrower.
+        """
+        width = max(float(self.config.width_pct), 1e-6)
+
+        gas = float(self.config.gas_cost)
+        slippage = float(self.config.slippage_coeff) * float(notional) / width
+
+        return gas + slippage

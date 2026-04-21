@@ -194,6 +194,20 @@ Profitability arises when:
 
 ---
 
+## Volatility Harvesting vs Convexity Drag
+
+A central result of the project is that LPing in AMMs should be understood as a volatility-harvesting strategy with structural convexity costs.
+Fee income tends to be generated gradually and frequently. In most simulated paths, LP earns small gains from trading flow while remaining near the center of the active range. This creates the intuitive appearance that liquidity provision is profitable “most of the time.”
+However, this view is incomplete. The same AMM mechanics that generate fee income also impose a concave payoff structure. When prices move substantially away from the reference level, the LP position realizes large convexity losses relative to HODL. These losses are infrequent, but severe. As a result, the distribution of terminal LP − HODL outcomes is highly asymmetric: many small gains are offset by a small number of very large losses.
+This tension defines the economics of AMM LPing:
+
+Fees reward local activity and support a high win rate.
+Convexity drag penalizes large excursions and generates tail losses.
+Transaction costs amplify the damage when the strategy responds too aggressively.
+
+The empirical evidence confirms this interpretation. Even under the best-performing policy found in the simulations, LP outperforms HODL in a majority of paths, yet the average LP − HODL remains negative. This is the characteristic signature of a short-volatility / short-gamma strategy: frequent small gains, rare dominant losses.
+In this sense, volatility has a dual effect. It increases fee generation, but it also accelerates convexity realization through larger price moves and more frequent stopping times. The central problem of AMM design is therefore not how to “capture volatility” in isolation, but how to determine whether fee income is sufficient to compensate for convexity drag and implementation costs.
+
 ## 12. Next Steps
 
 Extensions include:

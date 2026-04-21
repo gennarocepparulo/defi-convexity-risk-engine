@@ -9,12 +9,16 @@ class FeeModelConfig:
     liquidity_share: float = 1.0
     active_only: bool = True
 
-    # Smoothed concentration effect
     reference_width: float = 0.25
     alpha: float = 0.7
     min_width: float = 0.03
     min_fee_multiplier: float = 0.50
     max_fee_multiplier: float = 3.50
+
+    def __post_init__(self):
+        self.fee_tier = float(self.fee_tier)
+        self.volume_multiplier = float(self.volume_multiplier)
+        self.liquidity_share = float(self.liquidity_share)
 
 
 def concentration_factor(width_pct: float, config: FeeModelConfig) -> float:

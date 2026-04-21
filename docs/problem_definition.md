@@ -107,6 +107,22 @@ The model should produce:
 - comparison versus passive LP and HODL
 
 ---
+## Martingales, Convexity, and LP PnL Decomposition
+
+The project studies liquidity provision in concentrated AMMs through the lens of stochastic processes, convexity, and discrete control.
+The starting point is the martingale benchmark. Under the GBM specification used throughout the simulations, the underlying price is modeled as a stochastic process with no directional alpha. In this benchmark, the relevant comparison is not whether LP performs well in a subset of paths, but whether LP can systematically overcome the structural effect of its payoff geometry.
+The key theoretical observation is that the LP payoff is concave relative to HODL. This concavity is the source of impermanent loss: when price evolves randomly around the entry point, the LP position underperforms the corresponding passive inventory because it is exposed to negative convexity. By Jensen’s inequality, a concave transform of a martingale has a negative expected drift. This provides the mathematical basis for interpreting LP − HODL as a supermartingale in the absence of fees.
+This leads naturally to the following decomposition:
+LP PnL≈fees−convexity drag−transaction costs\text{LP PnL} \approx \text{fees} - \text{convexity drag} - \text{transaction costs}LP PnL≈fees−convexity drag−transaction costs
+or, equivalently,
+LP≈θ−γ−costs.\text{LP} \approx \theta - \gamma - \text{costs}.LP≈θ−γ−costs.
+In this interpretation:
+
+Fees (θ\thetaθ) represent the positive carry earned from order flow and realized activity.
+Convexity drag (γ\gammaγ) captures the Jensen gap associated with the concave LP payoff and is the economic content of impermanent loss.
+Costs arise from discrete rebalancing, including gas expenditure, slippage, and other implementation frictions.
+
+This decomposition unifies the main findings of the project. The LP position is not a passive yield strategy, but a controlled short-convexity position whose profitability depends on whether fee income can offset convexity losses and trading frictions. Width and rebalancing policies do not create alpha by themselves; they only modify the magnitude and timing of exposure to this trade-off.
 
 ## Notes
 
