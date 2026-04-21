@@ -1,12 +1,20 @@
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![Status](https://img.shields.io/badge/status-research-green)
+
 # DeFi Convexity Risk Engine
 
 ## Overview
 
-This project models the risk profile of Uniswap v3 liquidity provision using a quantitative finance framework.
+This project studies **Uniswap v3 liquidity provision as a convexity-selling strategy** and builds a **Monte Carlo framework for LP strategy optimization**.
 
-It analyzes LP positions as nonlinear financial instruments and evaluates their sensitivities (Delta, Gamma), convexity exposure, and jump risk under different market scenarios.
+It combines:
 
-The model integrates real-time market data and provides a structured way to assess whether fee income compensates for risk.
+- convexity and impermanent loss (IL) analysis  
+- LP vs HODL simulation  
+- dynamic rebalancing with transaction costs  
+- risk-adjusted optimization of LP range width  
+
+The project evolves from **risk measurement → strategy design**, with the goal of identifying **robust, decision-grade LP strategies**.
 
 ---
 
@@ -14,232 +22,423 @@ The model integrates real-time market data and provides a structured way to asse
 
 > Providing liquidity in Uniswap v3 is economically equivalent to selling a volatility strangle.
 
-LPs earn fees (premium) but are exposed to losses during large price movements due to negative convexity.
+LPs earn fees (premium) but are exposed to nonlinear losses during large price movements due to **negative convexity**.
 
 ---
 
-## Core Idea
+## Core Economic Idea
 
 Providing liquidity in concentrated AMMs can be interpreted as **selling convexity (short gamma)**:
 
-- LPs continuously rebalance inventory as price moves  
-- This creates nonlinear exposure to price changes  
-- Losses occur during high volatility regimes  
+- LP inventory is continuously rebalanced as price moves  
+- this creates nonlinear exposure to price changes  
+- losses materialize in trending or high-volatility regimes  
 
-> LPing is not passive yield — it is a short volatility strategy.
-
----
-
-## What I Built
-
-- Piecewise valuation model for Uniswap v3 LP positions  
-- Analytical Delta and Gamma computation across price ranges  
-- Scenario-based PnL engine (bear / base / bull)  
-- Jump-risk estimation via Poisson arrival process  
-- Risk/Reward metric comparing expected loss vs fee income  
-- Real-time ETH price integration via CoinGecko API  
+> LPing is not passive yield — it is a **short-volatility strategy**.
 
 ---
 
-## Risk Visualization
+## Convexity & Impermanent Loss
 
-The following chart shows the local Delta and Gamma across price levels:
+### Convexity Profile
 
 ![Risk Curves](outputs/risk_curves.png)
 
-### Interpretation
-
-- **Delta** decreases as price increases due to inventory rebalancing  
-- **Gamma** is negative within the active range → LP is short convexity  
-- Outside the range, Gamma approaches zero as liquidity becomes inactive  
+- Delta decreases as price moves due to inventory rebalancing  
+- Gamma is strictly negative within the active range  
+- Outside the range, Gamma → 0 (inactive liquidity)  
 
 ---
 
-## Example Output
+### Convexity Cost (LP − HODL)
 
-The engine produces a convexity dashboard across market scenarios:
+![Convexity Cost](outputs/convexity_cost.png)
 
-| Scenario | Price | Value | Delta | Gamma | Expected Loss | Fees | Risk/Reward |
-|----------|------|------|------|------|---------------|------|-------------|
-| Bear     | ↓    | ↓    | ↑    | -    | High Loss     | Low  | High        |
-| Base     | →    | →    | Mid  | -    | Medium Loss   | Low  | Medium      |
-| Bull     | ↑    | →    | 0    | 0    | Low Loss      | Low  | Low         |
+- Near entry: LP ≈ HODL  
+- Large moves: LP underperforms nonlinearly  
+- Loss grows with price deviation  
 
----
-
-## Methodology
-
-The LP position is modeled using Uniswap v3 liquidity mechanics:
-
-- Token0 / token1 decomposition of LP value  
-- Delta = ∂V/∂P  
-- Gamma = ∂²V/∂P²  
-- Scenario PnL under price shocks  
-- Jump risk modeled via Poisson arrival probability  
-- Expected loss compared against estimated fee income  
+> **LP − HODL = cost of short convexity**
 
 ---
 
-## Why It Matters
+### LP vs HODL Payoff
 
-DeFi yield is often presented as passive income.
+![PnL Comparison](outputs/pnl_comparison.png)
 
-This model shows that LP returns are primarily driven by:
+- HODL → linear payoff  
+- LP → concave payoff  
+- Underperformance in trends  
 
-- price path  
-- volatility  
-- convexity exposure  
+---
 
-> Risk, not yield, is the dominant driver of LP outcomes.
+### Simulation: Distribution of Outcomes
+
+![Simulation](outputs/simulation_distribution.png)
+
+- HODL → higher variance + upside  
+- LP → compressed distribution  
+- LP trades tail risk for fee income  
+
+---
+
+## Fee vs Convexity Trade-off
+
+LP profitability depends on:
+
+- **Fee income (positive carry)**  
+- **Convexity cost (negative drift)**  
+
+| Market Regime | Outcome |
+|--------------|--------|
+| Range-bound + high volume | LP profitable |
+| Trending / high volatility | LP underperforms |
+
+> LP is a **volatility-harvesting strategy**.
+
+---
+
+## Strategy Optimization (Main Contribution)
+
+We extend the framework from risk analysis to **strategy design**.
+
+### Objective
+
+Optimize:
+
+- LP range width  
+- rebalancing policy  
+
+to maximize:
+
+> **Expected (Fees − IL − Costs)**
+
+under stochastic price dynamics.
+
+---
+
+## Model Setup
+
+### Price Process
+
+- Geometric Brownian Motion (GBM)  
+- σ ∈ {0.2, 0.4, 0.6, 0.8}  
+- Monte Carlo simulation  
+
+---
+
+### Strategy Specification
+
+- log-symmetric LP ranges (5% → 30%)  
+- dynamic rebalancing (out-of-range trigger)  
+- segment-based IL realization  
+- explicit gas + slippage costs  
+
+---
+
+### Transaction Costs
+
+- fixed gas cost  
+- slippage ∝ capital / width  
+
+→ narrow ranges are more expensive to maintain  
+
+---
+
+### Impermanent Loss (Key Improvement)
+
+IL is modeled **locally**:
+
+- measured vs last rebalance price  
+- resets at each rebalance  
+- becomes **strategy-dependent**
+
+---
+
+## Optimization Results
+
+### Optimal Width vs Volatility
+
+![Optimal Width](outputs/optimal_width_vs_volatility.png)
+
+| Volatility (σ) | Optimal Width |
+|----------------|--------------|
+| 0.2 | ~20% |
+| 0.4 | ~16–20% |
+| 0.6 | ~20% |
+| 0.8 | ~18–22% |
+
+> Optimal width lies in a **stable 15–22% band**
+
+---
+
+### Performance vs Volatility
+
+![Performance](outputs/performance_vs_volatility.png)
+
+- LP outperformance increases with volatility  
+- driven by higher fee generation  
+
+---
+
+### Fee vs Width
+
+![Fee Income](outputs/fee_income_vs_width.png)
+
+- narrower ranges → higher fee density  
+- diminishing returns at extreme narrow widths  
+
+---
+
+## Robustness Analysis
+
+### Transaction Costs
+
+| Gas | Slippage | Optimal Width |
+|-----|----------|---------------|
+| Low | Low | ~14% |
+| Medium | Medium | ~20% |
+| High | High | ~30% |
+
+→ higher friction → wider optimal ranges  
+
+---
+
+### Stability
+
+Strategy remains robust across:
+
+- volatility regimes  
+- random seeds  
+- time horizons  
+
+---
+
+## Martingale Insight (Key Theoretical Result)
+
+Under zero fees:
+
+> **LP − HODL is a supermartingale**
+
+- negative expected drift  
+- driven by concavity (short gamma)  
+
+With fees:
+
+- a positive drift term is introduced  
+- profitability depends on:
+  - volatility  
+  - costs  
+  - rebalancing  
+
+> Strategy design = **controlling convexity so drift ≥ 0**
+
+---
+
+## Final Strategy
+
+We select:
+
+- **Width:** ~20%  
+- **Rebalance:** out-of-range  
+- **Capital:** fixed  
+- **Costs:** explicit  
+
+### Result
+
+- Outperforms HODL in majority of paths  
+- High variance  
+- Sensitive to volatility  
+
+> LP is a **risk-managed volatility harvesting strategy**, not a guaranteed outperformer.
+
+---
+
+## Final Strategy
+
+We select:
+
+- **Width:** ~20%  
+- **Rebalance:** out-of-range  
+- **Capital:** fixed  
+- **Costs:** explicit  
+
+### Result
+
+- Outperforms HODL in majority of paths  
+- High variance  
+- Sensitive to volatility  
+
+> LP is a **risk-managed volatility harvesting strategy**, not a guaranteed outperformer.
+
+---
+
+## Additional Results: Threshold Rebalancing, Volatility, and Final Policy Diagnostics
+
+The initial strategy comparison above is further refined by replacing discrete rebalancing policies with a **continuous rebalancing threshold**. This allows the project to move from policy comparison to actual strategy design.
+
+### Rebalancing Threshold (Refined Definition)
+
+Let \( S_t \) denote the asset price and let \( S_{\tau_k} \) be the reference price at the most recent rebalance time \( \tau_k \). We define the **rebalancing threshold** \( \delta \in (0,1) \) as the relative deviation that triggers a reset:
+
+\[
+\left| \frac{S_t}{S_{\tau_k}} - 1 \right| \ge \delta.
+\]
+
+Operationally, when this condition is met:
+
+- the LP position is re-centered at the current price,  
+- local impermanent loss is reset relative to the new center,  
+- accumulated fees are preserved,  
+- transaction costs are incurred.
+
+Smaller thresholds correspond to **more reactive** strategies with higher turnover, while larger thresholds correspond to **more passive** strategies that tolerate larger price excursions before rebalancing.
+
+### Width–Threshold Joint Optimization
+
+To evaluate the interaction between **structural convexity control** (width) and **timing control** (threshold), the project performs a joint width–threshold sweep.
+
+![Width–Threshold Heatmap](outputs/heatmap_width_threshold.png)
+
+This refined optimization confirms that:
+
+- **width** is the dominant structural control on convexity exposure,  
+- **threshold** determines how often convexity losses are realized,  
+- aggressive rebalancing cannot eliminate convexity drag and, in the presence of costs, often worsens outcomes by realizing losses more frequently
+
+The refined objective remains consistent with the project’s core decomposition:
+
+\[
+\text{LP PnL} \approx \text{fees} - \text{convexity drag} - \text{costs}.
+\]
+
+In this interpretation:
+
+- **fees** are the positive carry from order flow,  
+- **convexity drag** is the Jensen-gap / short-gamma component of LPing,  
+- **costs** arise from gas, slippage, and discrete implementation.
+
+---
+
+## Volatility, Rebalancing Frequency, and Realized Convexity
+
+A further refinement of the analysis treats rebalancing frequency as an **endogenous consequence of volatility** rather than a free control variable.
+
+Holding width and threshold fixed, increasing volatility raises the probability of hitting the rebalance boundary, and therefore increases the number of stopping times at which the position is reset.
+
+![Rebalancing Frequency vs Volatility](outputs/sigma_vs_rebalances.png)
+
+This provides a direct interpretation of rebalancing frequency as a proxy for **realized convexity pressure**:
+
+- higher volatility → more threshold crossings,  
+- more threshold crossings → more frequent realization of convexity losses,  
+- more frequent realization → higher cumulative implementation costs.
+
+In the current model (GBM dynamics with transaction costs), volatility therefore has a dual effect:
+
+- it increases fee generation,  
+- but it also accelerates convexity realization and turnover.
+
+The simulations show that in high-volatility regimes, the second effect dominates: fee income rises, but convexity losses and costs increase faster, leading to systematic deterioration in LP − HODL outcomes.
+
+---
+
+## Optimal Policy Diagnostics
+
+The final optimal-policy simulation summarizes the distributional structure of the least-adverse strategy found in the model.
+
+### Terminal LP − HODL Distribution
+
+![Optimal Policy Histogram](outputs/optimal_policy_histogram.png)
+
+The terminal distribution of LP − HODL is highly asymmetric:
+
+- most simulated paths produce **small positive outcomes**,  
+- a minority of paths generate **very large losses**,  
+- these rare losses dominate the expectation.
+
+This is the characteristic signature of a **short-volatility / short-convexity strategy**: many small gains from fees, offset by rare but severe downside during large price moves.
+
+### Fee Distribution
+
+![Optimal Policy Fees](outputs/optimal_policy_fees.png)
+
+Fee income is comparatively stable and concentrated, indicating that the extreme dispersion in LP outcomes is not primarily driven by unstable fee generation, but by the nonlinear exposure of LP to large price dislocations.
+
+### Rebalancing Count Distribution
+
+![Optimal Policy Rebalances](outputs/optimal_policy_rebalances.png)
+
+The rebalance-count distribution confirms that the selected policy is **sparse** rather than hyperactive: most paths require only a small number of resets, and many paths require none or only one rebalance. This is consistent with the broader conclusion that frequent rebalancing is not an effective cure for convexity drag under transaction costs.
+
+---
+
+## Final Distributional Result
+
+For the selected optimal-policy simulation:
+
+- **Mean LP − HODL:** −19.74  
+- **Standard deviation:** 269.74  
+- **Probability(LP > HODL):** 59.5%  
+- **Mean cumulative fees:** 119.4  
+- **Mean rebalances:** 1.36  
+
+This result captures the central paradox of the project:
+
+> LP outperforms HODL in a majority of simulated paths, yet the average LP − HODL remains negative.
+
+The explanation is structural:
+
+- **small, frequent gains** come from fee income,  
+- **rare, large losses** come from convexity / impermanent loss,  
+- tail losses dominate the expectation.
+
+The project therefore does **not** identify a genuinely profitable LP strategy under the modeled assumptions (GBM dynamics, fee model, and costs). Instead, it identifies the **least bad implementation** of a structurally short-convexity position.
+
+---
+
+## Updated Practical Interpretation
+
+Within this stylized framework, the least-adverse LP configuration is characterized by:
+
+- **wide or moderate ranges**,  
+- **sparse rebalancing**,  
+- reliance on **fee flow** rather than frequent convexity hedging,  
+- explicit acceptance of **left-tail risk**.
+
+The main design conclusion is therefore not that active management creates alpha, but that LP risk can be managed only partially. Width is the main structural lever, while rebalancing should be used conservatively to avoid unnecessary realization of convexity losses and transaction costs.
+
+In this sense, concentrated liquidity provision is best understood as a **controlled short-convexity strategy**: it can be optimized, but not transformed into a structurally risk-free source of outperformance.
+
+## Project Structure
+src/
+├── stochastic/ # price, fees, LP simulation
+├── strategy/ # Uniswap v3 strategy logic
+├── optimization/ # grid search & objective
+├── analysis/ # LP − HODL, martingale tests
+
+---
+
+## Limitations
+
+- GBM price model  
+- simplified liquidity math  
+- no endogenous order flow  
+- fixed fee tier  
 
 ---
 
 ## Future Work
 
-* Historical backtesting with real price data
-* Dynamic rebalancing strategies
-* Integration with on-chain data (Dune, APIs)
-* Streamlit dashboard for real-time monitoring
-
-## Convexity Profile of a Uniswap v3 LP
-
-The following chart illustrates the local Delta and Gamma of a concentrated liquidity position.
-
-![Risk Curves](outputs/risk_curves.png)
-
-Key observations:
-- Delta decreases with price due to inventory rebalancing
-- Gamma is strictly negative within the active range
-- The LP is effectively short volatility
+- historical backtesting  
+- multi-range LP strategies  
+- order-flow driven volume  
+- on-chain data integration  
+- dashboard / API layer  
 
 ---
-## Convexity Cost (Impermanent Loss)
-
-![Convexity Cost](outputs/convexity_cost.png)
-
-The difference between LP and HODL payoffs isolates the convexity effect embedded in liquidity provision.
-
-- Near the initial price, LP and HODL perform similarly  
-- As price moves away, LP increasingly underperforms  
-- Losses grow nonlinearly with price deviation  
-
-> The quantity LP − HODL represents the cost of being short convexity.
-
-This confirms that LPs systematically give up performance in trending markets in exchange for fee income.
-
-## LP vs HODL Comparison
-
-![PnL Comparison](outputs/pnl_comparison.png)
-
-### Interpretation
-
-- HODL exhibits linear exposure to price  
-- LP value is concave due to inventory rebalancing  
-- LP underperforms in trending markets  
-- The difference represents **impermanent loss**
-
-> LP positions sacrifice upside and downside to earn fees.
-
-## Simulation: LP vs HODL Outcomes
-
-![Simulation](outputs/simulation_distribution.png)
-
-### Interpretation
-
-- HODL exhibits higher variance and higher upside potential  
-- LP outcomes are more concentrated due to truncated exposure  
-- LP sacrifices extreme gains in exchange for fee income  
-
-> LP positions reduce variance but introduce convexity-driven underperformance in trending markets.
-## Fee vs Convexity Trade-off
-
-Simulation results show that LP profitability depends on the balance between:
-
-- fee income (positive carry)
-- convexity cost (negative PnL in trends)
-
-When volatility is high and price trends strongly, convexity losses dominate.
-
-When volume is high and price remains range-bound, fees can compensate losses.
-
-> LP is effectively a volatility-selling strategy that requires sufficient flow to be profitable.
-## Limitations
-- simplified jump specification
-- no full calibration to market data yet
-- no on-chain data pipeline yet
-
-### 📊 Mechanism: Fee Concentration vs Width
-
-![Fee Income](outputs/fee_income_vs_width.png)
-
-Fee generation decreases monotonically as width increases.
-
-Key observations:
-
-- Narrower ranges significantly increase fee density  
-- Higher volatility shifts the entire fee curve upward  
-- The marginal benefit of narrowing the range diminishes at very low widths  
-
-This confirms that **fee concentration is the primary driver of LP returns**.
-
----
-
-### 📊 Strategy Outcome: Performance vs Volatility
-
-![Performance](outputs/performance_vs_volatility.png)
-
-LP strategies benefit strongly from higher volatility:
-
-- Mean LP outperformance vs HODL increases with σ  
-- Higher volatility leads to more trading activity and fee accrual  
-
-This demonstrates that LP positions act as **volatility-harvesting strategies**.
-
----
-
-### 📊 Decision Rule: Optimal Width vs Volatility
-
-![Optimal Width](outputs/optimal_width_vs_volatility.png)
-
-The optimal width remains within a stable interior range:
-
-- No corner solutions (neither very narrow nor very wide)  
-- Only mild variation across volatility regimes  
-
-This suggests that:
-
-> Optimal LP positioning is robust to volatility changes, provided rebalancing is active.
-
-### Robustness: Transaction Cost Sensitivity
-
-We test robustness of the optimal LP width under varying transaction costs.
-As gas and slippage increase, the optimizer selects wider LP ranges:
-
-| Gas | Slippage | Optimal Width |
-|-----|----------|---------------|
-| Low | Low | ~14% |
-| Baseline | Medium | ~20% |
-| High | High | ~30% |
-
-This confirms that operational friction pushes LP strategies toward wider,
-more passive ranges, even under identical price dynamics.
-
-## Final Strategy Selection
-
-Based on optimization, volatility sweeps, and robustness analysis, we select a log-symmetric Uniswap v3 LP strategy with a 20% width centered on the current price and rebalancing upon range exit.
-
-This strategy lies at the center of a robust optimal band (15–25%) and remains stable across volatility regimes, random seeds, transaction costs, and investment horizons. Narrower ranges generate higher fees but suffer from excessive turnover, while wider ranges dilute fee capture.
-
-An end-to-end execution of the selected strategy (`run_strategy.py`) confirms the expected risk profile: the strategy outperforms HODL in a majority of paths but exhibits high variance, with mean performance sensitive to volatility and realization. This behavior is consistent with LP strategies as volatility-harvesting mechanisms rather than guaranteed outperformers.
-
-The selected configuration is therefore recommended as a defensible, decision-grade LP strategy under realistic market frictions.
-
-## Roadmap
-- historical backtesting
-- dynamic rebalancing strategies
-- on-chain data integration
-- Streamlit dashboard
 
 ## Author
 
-DeFi Quant Analyst focused on AMM risk, convexity, and yield modeling.
+Gennaro Cepparulo  
+Quantitative research on AMM risk, convexity, and LP strategy design
